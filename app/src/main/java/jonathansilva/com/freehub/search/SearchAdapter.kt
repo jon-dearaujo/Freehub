@@ -11,7 +11,7 @@ import com.squareup.picasso.Picasso
 import jonathansilva.com.freehub.R
 import jonathansilva.com.freehub.github.GithubRepository
 
-class SearchAdapter(val data: List<GithubRepository>): RecyclerView.Adapter<SearchAdapter.ViewHolder>() {
+class SearchAdapter(val data: MutableList<GithubRepository>): RecyclerView.Adapter<SearchAdapter.ViewHolder>() {
 
     class ViewHolder(val view: ConstraintLayout): RecyclerView.ViewHolder(view) {}
 

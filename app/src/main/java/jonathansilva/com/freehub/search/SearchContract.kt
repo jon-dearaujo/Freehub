@@ -9,9 +9,11 @@ interface SearchContract {
         fun showLoading()
         fun hideLoading()
         fun showData(repos: List<GithubRepository>)
+        fun showMore(repos: List<GithubRepository>)
     }
 
     interface Presenter {
         fun search(repoName: String)
+        fun searchMore(repoName: String)
     }
 }
