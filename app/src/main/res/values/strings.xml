@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">FreeHub</string>
+    <string name="repoNameHint">Type here the repo name</string>
+    <string name="search_icon_content_description">Search icon</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>
