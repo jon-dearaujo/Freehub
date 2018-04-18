@@ -12,6 +12,7 @@ import jonathansilva.com.freehub.R
 import jonathansilva.com.freehub.github.GithubRepository
 import kotlinx.android.synthetic.main.fragment_search.*
 import kotlinx.android.synthetic.main.view_search_box.view.*
+import java.util.*
 
 class SearchFragment: Fragment(), SearchContract.View {
 
@@ -24,10 +25,31 @@ class SearchFragment: Fragment(), SearchContract.View {
     }
 
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
+        searchAdapter = SearchAdapter(mutableListOf())
+
+        val viewManager = LinearLayoutManager(activity)
+
+        recyclerView.apply {
+            setHasFixedSize(true)
+
+            layoutManager = viewManager
+
+            adapter = searchAdapter
+        }
+
         searchBoxView
                 .onSearch()
                 .subscribe {
                     presenter.search(it)
+                }
+
+        searchBoxView
+                .onEdit()
+                .subscribe {
+                    if (searchAdapter.data.isNotEmpty()) {
+                        searchAdapter.data.clear()
+                        searchAdapter.notifyDataSetChanged()
+                    }
                 }
 
         recyclerView.addOnScrollListener(object: RecyclerView.OnScrollListener() {
@@ -45,17 +67,10 @@ class SearchFragment: Fragment(), SearchContract.View {
     }
 
     override fun showData(repos: List<GithubRepository>) {
-        searchAdapter = SearchAdapter(repos.toMutableList())
+        searchAdapter.data.clear()
+        searchAdapter.data.addAll(repos)
+        searchAdapter.notifyDataSetChanged()
 
-        val viewManager = LinearLayoutManager(activity)
-
-        recyclerView.apply {
-            setHasFixedSize(true)
-
-            layoutManager = viewManager
-
-            adapter = searchAdapter
-        }
     }
 
     override fun showMore(repos: List<GithubRepository>) {

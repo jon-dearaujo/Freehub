@@ -1,5 +1,7 @@
 package jonathansilva.com.freehub.searchbox
 
+import android.text.Editable
+import android.text.TextWatcher
 import android.widget.EditText
 import android.widget.ImageButton
 import io.reactivex.Observable
@@ -18,6 +20,20 @@ class SearchBoxPresenter: SearchBoxContract.Presenter {
             }
         }.filter { it -> !it.isNullOrEmpty()}
                 .filter { it -> it.isNotEmpty()}
+    }
+
+    override fun listenToTextChanges(editText: EditText): Observable<String> {
+        return Observable.create<String> {emitter ->
+            editText.addTextChangedListener(object: TextWatcher {
+                override fun afterTextChanged(editable: Editable?) {
+                    emitter.onNext(editText.text.toString())
+                }
+
+                override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) { }
+
+                override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) { }
+            })
+        }
     }
 
     private fun listenToTextEditActions(editText: EditText, emitter: ObservableEmitter<String>) {

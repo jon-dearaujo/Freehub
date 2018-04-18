@@ -26,8 +26,9 @@ class SearchAdapter(val data: MutableList<GithubRepository>): RecyclerView.Adapt
         Picasso.get().load(repo.owner.avatar_url)
                 .into(holder.view.findViewById<ImageView>(R.id.repoAvatar))
         holder.view.findViewById<TextView>(R.id.repoName).text = repo.name
-        holder.view.findViewById<TextView>(R.id.repoDescription)
-                .text = prepareDescription(repo.description)
+        holder.view.findViewById<TextView>(R.id.repoDescription).text = repo.description
+        holder.view.findViewById<TextView>(R.id.language).text = repo.language
+        holder.view.findViewById<TextView>(R.id.stars).text = repo.stargazers_count.toString()
     }
 
     override fun getItemCount(): Int {

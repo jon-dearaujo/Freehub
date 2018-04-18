@@ -26,6 +26,10 @@ class SearchBoxView @JvmOverloads constructor(context: Context, attributes: Attr
         return presenter.listenToActions(editText, imageButton)
     }
 
+    fun onEdit(): Observable<String> {
+        return presenter.listenToTextChanges(editText)
+    }
+
     fun showLoading() {
         imageButton.visibility = View.INVISIBLE
         progressBar.visibility = View.VISIBLE

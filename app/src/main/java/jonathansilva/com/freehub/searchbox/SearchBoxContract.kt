@@ -8,5 +8,6 @@ interface SearchBoxContract {
     interface View { }
     interface Presenter {
         fun listenToActions(editText: EditText, button: ImageButton): Observable<String>
+        fun listenToTextChanges(editText: EditText): Observable<String>
     }
 }
