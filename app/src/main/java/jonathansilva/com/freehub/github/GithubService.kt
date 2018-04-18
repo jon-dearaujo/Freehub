@@ -12,5 +12,5 @@ interface GithubService {
     }
 
     @GET("repositories")
-    fun search(@Query("q") name: String, @Query("page") page: Int): Observable<Response<SearchResponse>>
+    fun search(@Query("q") name: String, @Query("page") page: Int, @Query("sort") sort: String = "stars"): Observable<Response<SearchResponse>>
 }
