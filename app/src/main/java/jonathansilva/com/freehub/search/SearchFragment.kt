@@ -1,33 +1,63 @@
 package jonathansilva.com.freehub.search
 
+import android.arch.lifecycle.Observer
+import android.arch.lifecycle.ViewModelProviders
+import android.arch.paging.PagedList
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
+import android.widget.Toast
 import jonathansilva.com.freehub.R
-import jonathansilva.com.freehub.github.GithubRepository
+import jonathansilva.com.freehub.repository.SearchDataState
+import jonathansilva.com.freehub.repository.GithubRepo
+
 import kotlinx.android.synthetic.main.fragment_search.*
-import kotlinx.android.synthetic.main.view_search_box.view.*
-import java.util.*
 
-class SearchFragment: Fragment(), SearchContract.View {
-
-    private lateinit var presenter: SearchContract.Presenter
-    private lateinit var searchAdapter: SearchAdapter
-
-    override fun onCreateView(
-            inflater: LayoutInflater?,container: ViewGroup?, savedInstanceState: Bundle?): View? {
-         return inflater!!.inflate(R.layout.fragment_search, container, false)
+class SearchFragment: Fragment() {
+    companion object {
+        val TAG = "search_fragment";
     }
 
-    override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
-        searchAdapter = SearchAdapter(mutableListOf())
+    private val dataObserver = Observer<PagedList<GithubRepo>> {showData(it)}
+    private val stateObserver = Observer<SearchDataState> {handleStateChange(it)}
+    private val errorObserver = Observer<String> {
+        it?.let {
+            hideLoading()
+            Toast.makeText(activity, it, Toast.LENGTH_LONG).show()
+        }
+    }
 
-        val viewManager = LinearLayoutManager(activity)
+    lateinit var navigator: SearchNavigator
+    private lateinit var searchAdapter: SearchAdapter
+    private lateinit var viewModel: SearchViewModel
+
+    override fun onCreateView(
+            inflater: LayoutInflater,container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        super.onCreateView(inflater, container, savedInstanceState)
+        return inflater.inflate(R.layout.fragment_search, container, false)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        viewModel = ViewModelProviders
+                .of(this, SearchViewModelFactory())
+                .get(SearchViewModel::class.java)
+
+        viewModel.searchData.observe(this, dataObserver)
+        viewModel.dataState.observe(this, stateObserver)
+        viewModel.errorObserver.observe(this, errorObserver)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        searchAdapter = SearchAdapter(navigator)
+
+        val viewManager = LinearLayoutManager(activity?.applicationContext)
 
         recyclerView.apply {
             setHasFixedSize(true)
@@ -40,49 +70,35 @@ class SearchFragment: Fragment(), SearchContract.View {
         searchBoxView
                 .onSearch()
                 .subscribe {
-                    presenter.search(it)
+                    viewModel.load(it)
                 }
 
-        searchBoxView
-                .onEdit()
-                .subscribe {
-                    if (searchAdapter.data.isNotEmpty()) {
-                        searchAdapter.data.clear()
-                        searchAdapter.notifyDataSetChanged()
-                    }
-                }
+    }
 
-        recyclerView.addOnScrollListener(object: RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView?, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
-                if (dy > 0 && recyclerView?.canScrollVertically(RecyclerView.FOCUS_DOWN) == false) {
-                    presenter.searchMore(searchBoxView.editText.text.toString())
+    fun showData(data: PagedList<GithubRepo>?) {
+        data?.let {
+            searchAdapter.submitList(it)
+        }
+    }
+
+    fun handleStateChange(state: SearchDataState?) {
+        state?.let {
+            when (it) {
+                SearchDataState.LOADED -> hideLoading()
+                SearchDataState.LOADING -> showLoading()
+                SearchDataState.FINISHED -> {
+                    hideLoading()
+                    Toast.makeText(activity, "All repositories are loaded", Toast.LENGTH_SHORT).show()
                 }
             }
-        })
+        }
     }
 
-    override fun setPresenter(presenter: SearchContract.Presenter) {
-        this.presenter = presenter
-    }
-
-    override fun showData(repos: List<GithubRepository>) {
-        searchAdapter.data.clear()
-        searchAdapter.data.addAll(repos)
-        searchAdapter.notifyDataSetChanged()
-
-    }
-
-    override fun showMore(repos: List<GithubRepository>) {
-        searchAdapter.data.addAll(repos)
-        searchAdapter.notifyDataSetChanged()
-    }
-
-    override fun showLoading() {
+    fun showLoading() {
         searchBoxView.showLoading()
     }
 
-    override fun hideLoading() {
+    fun hideLoading() {
         searchBoxView.hideLoading()
     }
 }
