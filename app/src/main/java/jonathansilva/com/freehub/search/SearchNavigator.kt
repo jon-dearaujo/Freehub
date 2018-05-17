@@ -1,5 +1,6 @@
 package jonathansilva.com.freehub.search
 
+import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import jonathansilva.com.freehub.R
@@ -10,6 +11,11 @@ class SearchNavigator(val fragmentManager: FragmentManager) {
     fun openDetailFragment(repo: GithubRepo) {
         var fragment: Fragment? = fragmentManager.findFragmentByTag(DetailFragment.TAG)
         fragment = fragment ?: DetailFragment()
+
+        val bundle =  Bundle()
+        bundle.putString("url", repo.apiUrl)
+        fragment.arguments = bundle
+
         fragmentManager.beginTransaction()
                 .replace(R.id.fragmentHolder, fragment, DetailFragment.TAG)
                 .addToBackStack(null)
