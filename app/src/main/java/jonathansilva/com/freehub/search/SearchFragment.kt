@@ -21,15 +21,6 @@ class SearchFragment: Fragment() {
         val TAG = "search_fragment";
     }
 
-    private val dataObserver = Observer<PagedList<GithubRepo>> {showData(it)}
-    private val stateObserver = Observer<SearchDataState> {handleStateChange(it)}
-    private val errorObserver = Observer<String> {
-        it?.let {
-            hideLoading()
-            Toast.makeText(activity, it, Toast.LENGTH_LONG).show()
-        }
-    }
-
     lateinit var navigator: SearchNavigator
     private lateinit var searchAdapter: SearchAdapter
     private lateinit var viewModel: SearchViewModel
@@ -40,16 +31,13 @@ class SearchFragment: Fragment() {
         return inflater.inflate(R.layout.fragment_search, container, false)
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProviders
                 .of(this, SearchViewModelFactory())
                 .get(SearchViewModel::class.java)
 
-        viewModel.searchData.observe(this, dataObserver)
-        viewModel.dataState.observe(this, stateObserver)
-        viewModel.errorObserver.observe(this, errorObserver)
+        subscribeToViewModelData()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -73,6 +61,20 @@ class SearchFragment: Fragment() {
                     viewModel.load(it)
                 }
 
+    }
+
+    private fun subscribeToViewModelData() {
+        val dataObserver = Observer<PagedList<GithubRepo>> {showData(it)}
+        val stateObserver = Observer<SearchDataState> {handleStateChange(it)}
+        val errorObserver = Observer<String> {
+            it?.let {
+                hideLoading()
+                Toast.makeText(activity, it, Toast.LENGTH_LONG).show()
+            }
+        }
+        viewModel.searchData.observe(this, dataObserver)
+        viewModel.dataState.observe(this, stateObserver)
+        viewModel.errorObserver.observe(this, errorObserver)
     }
 
     fun showData(data: PagedList<GithubRepo>?) {
